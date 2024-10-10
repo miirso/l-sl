@@ -5,10 +5,7 @@ import com.miirso.shortlink.admin.common.convention.result.Results;
 import com.miirso.shortlink.admin.dto.resp.UserRespDTO;
 import com.miirso.shortlink.admin.service.UserService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * @Package com.miirso.shortlink.admin.controller
@@ -20,7 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
  */
 
 @RestController
-@RequestMapping("/api/shortlink/v1/user")
+@RequestMapping("/api/shortlink/admin/v1/user")
 @RequiredArgsConstructor
 public class UserController {
 
@@ -36,5 +33,14 @@ public class UserController {
         return Results.success(userService.getUserByUserName(username));
     }
 
-
+    /**
+     * 查询用户名是否存在
+     * @param username
+     * @return true:不存在
+     *         false:存在
+     */
+    @GetMapping("/has-username")
+    public Result<Boolean> hasUsername(@RequestParam("username") String username) {
+        return Results.success(userService.hasUserName(username));
+    }
 }
