@@ -1,5 +1,7 @@
 package com.miirso.shortlink.admin.controller;
 
+import com.miirso.shortlink.admin.common.convention.result.Result;
+import com.miirso.shortlink.admin.common.convention.result.Results;
 import com.miirso.shortlink.admin.dto.resp.UserRespDTO;
 import com.miirso.shortlink.admin.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -13,7 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
  * @Author miirso
  * @Date 2024/10/10 22:30
  *
- *
+ * UserController
  *
  */
 
@@ -30,8 +32,8 @@ public class UserController {
      * @return UserRespDTO 用户基本信息
      */
     @GetMapping("{username}")
-    public UserRespDTO getUserByUsername(@PathVariable String username) {
-        return userService.getUserByUserName(username);
+    public Result<UserRespDTO> getUserByUsername(@PathVariable String username) {
+        return Results.success(userService.getUserByUserName(username));
     }
 
 
