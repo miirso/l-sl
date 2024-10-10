@@ -2,6 +2,7 @@ package com.miirso.shortlink.admin.controller;
 
 import com.miirso.shortlink.admin.common.convention.result.Result;
 import com.miirso.shortlink.admin.common.convention.result.Results;
+import com.miirso.shortlink.admin.dto.req.UserRegisterReqDTO;
 import com.miirso.shortlink.admin.dto.resp.UserRespDTO;
 import com.miirso.shortlink.admin.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -42,5 +43,16 @@ public class UserController {
     @GetMapping("/has-username")
     public Result<Boolean> hasUsername(@RequestParam("username") String username) {
         return Results.success(userService.hasUserName(username));
+    }
+
+    /**
+     * 注册用户
+     * @param userRegisterReqDTO
+     * @return Void
+     */
+    @PostMapping
+    public Result<Void> register(@RequestBody UserRegisterReqDTO userRegisterReqDTO) {
+        userService.register(userRegisterReqDTO);
+        return Results.success();
     }
 }
