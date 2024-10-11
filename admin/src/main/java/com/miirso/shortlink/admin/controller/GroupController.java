@@ -26,6 +26,10 @@ public class GroupController {
 
     private final GroupService groupService;
 
+    /**
+     * 新增短链接分组
+     * @param groupSaveReqDTO
+     */
     @PostMapping
     public Result<Void> saveGroup(@RequestBody GroupSaveReqDTO groupSaveReqDTO) {
         groupService.saveGroup(groupSaveReqDTO);
