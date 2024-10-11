@@ -2,7 +2,11 @@ package com.miirso.shortlink.admin.controller;
 
 import com.miirso.shortlink.admin.common.convention.result.Result;
 import com.miirso.shortlink.admin.common.convention.result.Results;
+import com.miirso.shortlink.admin.dto.req.UserLoginReqDTO;
 import com.miirso.shortlink.admin.dto.req.UserRegisterReqDTO;
+import com.miirso.shortlink.admin.dto.req.UserUpdateReqDTO;
+import com.miirso.shortlink.admin.dto.resp.UserLoginRespDTO;
+import com.miirso.shortlink.admin.dto.resp.UserRegisterRespDTO;
 import com.miirso.shortlink.admin.dto.resp.UserRespDTO;
 import com.miirso.shortlink.admin.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -37,8 +41,7 @@ public class UserController {
     /**
      * 查询用户名是否存在
      * @param username
-     * @return true:不存在
-     *         false:存在
+     * @return Boolean
      */
     @GetMapping("/has-username")
     public Result<Boolean> hasUsername(@RequestParam("username") String username) {
@@ -51,8 +54,30 @@ public class UserController {
      * @return Void
      */
     @PostMapping
-    public Result<Void> register(@RequestBody UserRegisterReqDTO userRegisterReqDTO) {
-        userService.register(userRegisterReqDTO);
+    public Result<UserRegisterRespDTO> register(@RequestBody UserRegisterReqDTO userRegisterReqDTO) {
+        UserRegisterRespDTO userRegisterRespDTO = userService.register(userRegisterReqDTO);
+        return Results.success(userRegisterRespDTO);
+    }
+
+    /**
+     * 修改用户信息
+     * @param userUpdateReqDTO
+     * @return Void
+     */
+    @PutMapping
+    public Result<Void> update(@RequestBody UserUpdateReqDTO userUpdateReqDTO) {
+        userService.update(userUpdateReqDTO);
         return Results.success();
+    }
+
+    /**
+     * 用户登录
+     * @param userLoginReqDTO
+     * @return UserLoginRespDTO
+     */
+    @PostMapping("/login")
+    public Result<UserLoginRespDTO> login(@RequestBody UserLoginReqDTO userLoginReqDTO) {
+        UserLoginRespDTO userLoginRespDTO = userService.login(userLoginReqDTO);
+        return Results.success(userLoginRespDTO);
     }
 }

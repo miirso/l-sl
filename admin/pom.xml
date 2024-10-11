@@ -57,6 +57,11 @@
             <version>5.3.2</version>
         </dependency>
 
+        <!--spring-security-core-->
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-core</artifactId>
+        </dependency>
     </dependencies>
 
 </project>

@@ -5,14 +5,10 @@ import lombok.Data;
 /**
  * @Package com.miirso.shortlink.admin.dto.req
  * @Author miirso
- * @Date 2024/10/11 1:53
- *
- * 用户注册request参数
- *
+ * @Date 2024/10/11 4:07
  */
-
 @Data
-public class UserRegisterReqDTO {
+public class UserUpdateReqDTO {
 
     private String username;
 

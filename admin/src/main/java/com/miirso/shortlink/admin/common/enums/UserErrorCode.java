@@ -21,7 +21,11 @@ public enum UserErrorCode implements IErrorCode {
 
     USER_EXIST("B000202", "用户已存在"),
 
-    USER_SAVE_ERROR("B000203", "用户记录新增失败");
+    USER_SAVE_ERROR("B000203", "用户记录新增失败"),
+
+    USER_NAME_ERROR("B000204", "用户名为空"),
+
+    USER_LOGIN_ERROR("B000205", "密码错误");
 
     private String code;
 

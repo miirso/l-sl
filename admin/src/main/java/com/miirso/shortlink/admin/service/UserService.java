@@ -2,7 +2,11 @@ package com.miirso.shortlink.admin.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.miirso.shortlink.admin.dao.entity.UserDO;
+import com.miirso.shortlink.admin.dto.req.UserLoginReqDTO;
 import com.miirso.shortlink.admin.dto.req.UserRegisterReqDTO;
+import com.miirso.shortlink.admin.dto.req.UserUpdateReqDTO;
+import com.miirso.shortlink.admin.dto.resp.UserLoginRespDTO;
+import com.miirso.shortlink.admin.dto.resp.UserRegisterRespDTO;
 import com.miirso.shortlink.admin.dto.resp.UserRespDTO;
 
 /**
@@ -34,5 +38,18 @@ public interface UserService extends IService<UserDO> {
      * 用户注册
      * @param userRegisterReqDTO
      */
-    void register(UserRegisterReqDTO userRegisterReqDTO);
+    UserRegisterRespDTO register(UserRegisterReqDTO userRegisterReqDTO);
+
+    /**
+     * 用户信息修改
+     * @param userUpdateReqDTO
+     */
+    void update(UserUpdateReqDTO userUpdateReqDTO);
+
+    /**
+     * 用户登录
+     * @param userLoginReqDTO
+     * @return UserLoginRespDTO
+     */
+    UserLoginRespDTO login(UserLoginReqDTO userLoginReqDTO);
 }

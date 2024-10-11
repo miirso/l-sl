@@ -1,26 +1,41 @@
 package com.miirso.shortlink.admin.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.crypto.digest.BCrypt;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.miirso.shortlink.admin.common.constant.RedisCacheConstant;
 import com.miirso.shortlink.admin.common.convention.exception.ClientException;
 import com.miirso.shortlink.admin.common.convention.exception.ServiceException;
 import com.miirso.shortlink.admin.common.enums.UserErrorCode;
 import com.miirso.shortlink.admin.dao.entity.UserDO;
 import com.miirso.shortlink.admin.dao.mapper.UserMapper;
+import com.miirso.shortlink.admin.dto.req.UserLoginReqDTO;
 import com.miirso.shortlink.admin.dto.req.UserRegisterReqDTO;
+import com.miirso.shortlink.admin.dto.req.UserUpdateReqDTO;
+import com.miirso.shortlink.admin.dto.resp.UserLoginRespDTO;
+import com.miirso.shortlink.admin.dto.resp.UserRegisterRespDTO;
 import com.miirso.shortlink.admin.dto.resp.UserRespDTO;
+import com.miirso.shortlink.admin.dto.thread.UserInfoDTO;
 import com.miirso.shortlink.admin.service.UserService;
+import com.miirso.shortlink.admin.utils.PasswordEncoder;
+import com.miirso.shortlink.admin.utils.UserHolder;
 import lombok.RequiredArgsConstructor;
 import org.redisson.api.RBloomFilter;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.BeanUtils;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
+
 import static com.miirso.shortlink.admin.common.constant.RedisCacheConstant.LOCK_USER_REGISTER_KEY;
-import static com.miirso.shortlink.admin.common.enums.UserErrorCode.USER_NAME_EXIST;
+import static com.miirso.shortlink.admin.common.constant.RedisCacheConstant.LOGIN_USER_TTL;
+import static com.miirso.shortlink.admin.common.enums.UserErrorCode.*;
 
 /**
  * @Package com.miirso.shortlink.admin.service.impl
@@ -38,6 +53,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserDO> implements 
     private final RBloomFilter<String> userRegisterCachePenetrationBloomFilter;
 
     private final RedissonClient redissonClient;
+
+    private final StringRedisTemplate stringRedisTemplate;
 
     @Override
     public UserRespDTO getUserByUserName(String username) {
@@ -65,7 +82,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserDO> implements 
     }
 
     @Override
-    public void register(UserRegisterReqDTO userRegisterReqDTO) {
+    public UserRegisterRespDTO register(UserRegisterReqDTO userRegisterReqDTO) {
         String username = userRegisterReqDTO.getUsername();
         if (!hasUserName(username)) {
             throw new ClientException(UserErrorCode.USER_NAME_EXIST);
@@ -74,12 +91,30 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserDO> implements 
         RLock lock = redissonClient.getLock(LOCK_USER_REGISTER_KEY + username);
         try {
             if (lock.tryLock()) {
-                int inserted = baseMapper.insert(BeanUtil.toBean(userRegisterReqDTO, UserDO.class));
+                // 加密password
+                UserDO user = BeanUtil.toBean(userRegisterReqDTO, UserDO.class);
+                user.setPassword(PasswordEncoder.encode(user.getPassword()));
+                int inserted = baseMapper.insert(user);
                 if (inserted < 1) {
                     throw new ServiceException(UserErrorCode.USER_SAVE_ERROR);
                 }
+
                 userRegisterCachePenetrationBloomFilter.add(username);
-                return;
+
+                // 生成token
+                String tokenKey = RedisCacheConstant.LOGIN_USER_KEY + username;
+                String token = UUID.randomUUID().toString();
+                // 60min ttl
+                stringRedisTemplate.opsForValue().set(tokenKey, token, LOGIN_USER_TTL, TimeUnit.MINUTES);
+
+                // 当前线程存入User信息
+                UserInfoDTO userInfoDTO = BeanUtil.toBean(userRegisterReqDTO, UserInfoDTO.class);
+                Long userId = user.getId();
+                System.out.println(userId);
+                userInfoDTO.setUserId(userId);
+                UserHolder.saveUser(userInfoDTO);
+
+                return new UserRegisterRespDTO(token);
             }
             throw new ClientException(USER_NAME_EXIST);
         } finally {
@@ -87,4 +122,38 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserDO> implements 
         }
     }
 
+    @Override
+    public void update(UserUpdateReqDTO userUpdateReqDTO) {
+        // TODO 验证当前用户名是否为登录用户.
+        // 到这一步是拥有token的，但是需要做校验，防止修改他人信息.
+        // 留到网关部分fix
+        LambdaUpdateWrapper<UserDO> updateWrapper = Wrappers.lambdaUpdate(UserDO.class)
+                .eq(UserDO::getUsername, userUpdateReqDTO.getUsername());
+        baseMapper.update(BeanUtil.toBean(userUpdateReqDTO, UserDO.class), updateWrapper);
+    }
+
+    @Override
+    public UserLoginRespDTO login(UserLoginReqDTO userLoginReqDTO) {
+        String username = userLoginReqDTO.getUsername();
+        if (username == null) throw new ClientException(USER_NAME_ERROR);
+        LambdaQueryWrapper<UserDO> queryWrapper = Wrappers.lambdaQuery(UserDO.class)
+                .eq(UserDO::getUsername, username)
+                .eq(UserDO::getDelFlag, 0);
+        UserDO userDO = baseMapper.selectOne(queryWrapper);
+
+        if (userDO == null) {
+            throw new ClientException(USER_NULL);
+        }
+
+        if (!BCrypt.checkpw(userLoginReqDTO.getPassword(), userDO.getPassword())) {
+            throw new ClientException(USER_LOGIN_ERROR);
+        }
+        
+        // redis 存储token
+        String tokenKey = RedisCacheConstant.LOGIN_USER_KEY + username;
+        String token = UUID.randomUUID().toString();
+        stringRedisTemplate.opsForValue().set(tokenKey, token, LOGIN_USER_TTL, TimeUnit.MINUTES);
+
+        return new UserLoginRespDTO(token);
+    }
 }
