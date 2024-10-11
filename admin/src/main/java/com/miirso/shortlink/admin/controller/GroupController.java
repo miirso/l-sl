@@ -3,12 +3,12 @@ package com.miirso.shortlink.admin.controller;
 import com.miirso.shortlink.admin.common.convention.result.Result;
 import com.miirso.shortlink.admin.common.convention.result.Results;
 import com.miirso.shortlink.admin.dto.req.GroupSaveReqDTO;
+import com.miirso.shortlink.admin.dto.resp.GroupRespDTO;
 import com.miirso.shortlink.admin.service.GroupService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 /**
  * @Package com.miirso.shortlink.admin.controller
@@ -34,5 +34,15 @@ public class GroupController {
     public Result<Void> saveGroup(@RequestBody GroupSaveReqDTO groupSaveReqDTO) {
         groupService.saveGroup(groupSaveReqDTO);
         return Results.success();
+    }
+
+    /**
+     * 查询短链接分组列表
+     * @return List<GroupRespDTO>
+     */
+    // TODO 改为分页查询
+    @GetMapping
+    public Result<List<GroupRespDTO>> listGroup() {
+        return Results.success(groupService.listGroup());
     }
 }

@@ -15,11 +15,11 @@ public class UserHolder {
         tl.set(user);
     }
 
-    public static UserInfoDTO getUser(){
+    public static UserInfoDTO getUserInfoDTO(){
         return tl.get();
     }
 
-    public static void removeUser(){
+    public static void removeUserInfoDTO(){
         tl.remove();
     }
 }
