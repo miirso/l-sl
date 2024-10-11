@@ -3,11 +3,13 @@ package com.miirso.shortlink.admin.service.impl;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.RandomUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.miirso.shortlink.admin.dao.entity.GroupDO;
 import com.miirso.shortlink.admin.dao.mapper.GroupMapper;
 import com.miirso.shortlink.admin.dto.req.GroupSaveReqDTO;
+import com.miirso.shortlink.admin.dto.req.GroupUpdateReqDTO;
 import com.miirso.shortlink.admin.dto.resp.GroupRespDTO;
 import com.miirso.shortlink.admin.service.GroupService;
 import com.miirso.shortlink.admin.utils.UserHolder;
@@ -50,18 +52,23 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, GroupDO> implemen
 
     @Override
     public List<GroupRespDTO> listGroup() {
+
         String username = UserHolder.getUserInfoDTO().getUsername();
         LambdaQueryWrapper<GroupDO> groupDOLambdaQueryWrapper = Wrappers.lambdaQuery(GroupDO.class)
                 .eq(GroupDO::getUsername, username)
                 .eq(GroupDO::getDelFlag, 0)
                 .orderByDesc(GroupDO::getSortOrder, GroupDO::getUpdateTime);
         List<GroupDO> groupDOS = baseMapper.selectList(groupDOLambdaQueryWrapper);
-        
-        // System.out.println("======================");
-        // System.out.println(groupDOS.size());
-        // for (GroupDO groupDO : groupDOS) {
-        //     System.out.println(groupDO.getName());
-        // }
         return BeanUtil.copyToList(groupDOS, GroupRespDTO.class);
+    }
+
+    @Override
+    public void updateGroup(GroupUpdateReqDTO groupUpdateReqDTO) {
+        LambdaUpdateWrapper<GroupDO> updateWrapper = Wrappers.lambdaUpdate(GroupDO.class)
+                .eq(GroupDO::getGid, groupUpdateReqDTO.getGid())
+                .eq(GroupDO::getDelFlag, 0);
+        GroupDO groupDO = new GroupDO();
+        groupDO.setName(groupUpdateReqDTO.getName());
+        baseMapper.update(groupDO, updateWrapper);
     }
 }

@@ -3,6 +3,7 @@ package com.miirso.shortlink.admin.controller;
 import com.miirso.shortlink.admin.common.convention.result.Result;
 import com.miirso.shortlink.admin.common.convention.result.Results;
 import com.miirso.shortlink.admin.dto.req.GroupSaveReqDTO;
+import com.miirso.shortlink.admin.dto.req.GroupUpdateReqDTO;
 import com.miirso.shortlink.admin.dto.resp.GroupRespDTO;
 import com.miirso.shortlink.admin.service.GroupService;
 import lombok.RequiredArgsConstructor;
@@ -38,11 +39,20 @@ public class GroupController {
 
     /**
      * 查询短链接分组列表
-     * @return List<GroupRespDTO>
+     * @return List&lt;GroupRespDTO&gt;
      */
     // TODO 改为分页查询
     @GetMapping
     public Result<List<GroupRespDTO>> listGroup() {
         return Results.success(groupService.listGroup());
     }
+
+    @PutMapping
+    public Result<Void> update(@RequestBody GroupUpdateReqDTO groupUpdateReqDTO) {
+        groupService.updateGroup(groupUpdateReqDTO);
+        return Results.success();
+    }
+
+    // TODO delete & order
+    
 }
