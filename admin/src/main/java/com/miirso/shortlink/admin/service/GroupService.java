@@ -2,6 +2,7 @@ package com.miirso.shortlink.admin.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.miirso.shortlink.admin.dao.entity.GroupDO;
+import com.miirso.shortlink.admin.dto.req.GroupSaveReqDTO;
 
 /**
  * @Package com.miirso.shortlink.admin.service
@@ -13,5 +14,7 @@ import com.miirso.shortlink.admin.dao.entity.GroupDO;
  */
 
 public interface GroupService extends IService<GroupDO> {
+
+    void saveGroup(GroupSaveReqDTO groupSaveReqDTO);
 
 }

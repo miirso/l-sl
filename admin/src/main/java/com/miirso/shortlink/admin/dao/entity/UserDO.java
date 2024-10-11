@@ -3,8 +3,6 @@ package com.miirso.shortlink.admin.dao.entity;
 import com.baomidou.mybatisplus.annotation.*;
 import lombok.Data;
 
-import java.util.Date;
-
 /**
  * @Package com.miirso.shortlink.admin.dao.entity
  * @Author miirso
@@ -16,13 +14,13 @@ import java.util.Date;
 
 @Data
 @TableName("t_user")
-public class UserDO {
+public class UserDO extends BaseDO {
     private static final long serialVersionUID = 1L;
 
-    @TableId(type = IdType.AUTO)
     /**
      * id
      */
+    @TableId(type = IdType.AUTO)
     private Long id;
 
     /**
@@ -56,27 +54,10 @@ public class UserDO {
     private Long deletionTime;
 
     /**
-     * 创建时间
-     */
-    @TableField(fill = FieldFill.INSERT)
-    private Date createTime;
-
-    /**
-     * 修改时间
-     */
-    @TableField(fill = FieldFill.INSERT_UPDATE)
-    private Date updateTime;
-
-    /**
-     * 删除标识 0：未删除 1：已删除
-     */
-    @TableField(fill = FieldFill.INSERT)
-    private int delFlag;
-
-    /**
      * 团队标识
      */
     private Long groupId;
 
     public UserDO() {}
+
 }
