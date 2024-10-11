@@ -8,6 +8,7 @@ import com.miirso.shortlink.admin.dto.req.UserUpdateReqDTO;
 import com.miirso.shortlink.admin.dto.resp.UserLoginRespDTO;
 import com.miirso.shortlink.admin.dto.resp.UserRegisterRespDTO;
 import com.miirso.shortlink.admin.dto.resp.UserRespDTO;
+import jakarta.servlet.http.HttpServletRequest;
 
 /**
  * @Package com.miirso.shortlink.admin.service
@@ -52,4 +53,17 @@ public interface UserService extends IService<UserDO> {
      * @return UserLoginRespDTO
      */
     UserLoginRespDTO login(UserLoginReqDTO userLoginReqDTO);
+
+    /**
+     * 检查是否处于登录状态
+     * @return Boolean
+     */
+    Boolean check(HttpServletRequest request);
+
+    /**
+     * 退出登录
+     * @param request
+     * @return Boolean
+     */
+    Boolean logout(HttpServletRequest request);
 }

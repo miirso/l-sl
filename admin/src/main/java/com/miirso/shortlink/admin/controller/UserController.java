@@ -9,6 +9,7 @@ import com.miirso.shortlink.admin.dto.resp.UserLoginRespDTO;
 import com.miirso.shortlink.admin.dto.resp.UserRegisterRespDTO;
 import com.miirso.shortlink.admin.dto.resp.UserRespDTO;
 import com.miirso.shortlink.admin.service.UserService;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -80,4 +81,22 @@ public class UserController {
         UserLoginRespDTO userLoginRespDTO = userService.login(userLoginReqDTO);
         return Results.success(userLoginRespDTO);
     }
+
+    /**
+     * 检查登录状态
+     * @param request
+     * @return Boolean
+     */
+    @GetMapping("check")
+    public Result<Boolean> check(HttpServletRequest request) {
+        Boolean isLogin = userService.check(request);
+        return Results.success(isLogin);
+    }
+
+    @DeleteMapping("logout")
+    public Result<Boolean> logout(HttpServletRequest request) {
+        Boolean isLogout = userService.logout(request);
+        return Results.success(isLogout);
+    }
+
 }

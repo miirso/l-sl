@@ -22,6 +22,7 @@ import com.miirso.shortlink.admin.dto.thread.UserInfoDTO;
 import com.miirso.shortlink.admin.service.UserService;
 import com.miirso.shortlink.admin.utils.PasswordEncoder;
 import com.miirso.shortlink.admin.utils.UserHolder;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.redisson.api.RBloomFilter;
 import org.redisson.api.RLock;
@@ -112,6 +113,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserDO> implements 
                 Long userId = user.getId();
                 System.out.println(userId);
                 userInfoDTO.setUserId(userId);
+                userInfoDTO.setToken(token);
                 UserHolder.saveUser(userInfoDTO);
 
                 return new UserRegisterRespDTO(token);
@@ -155,7 +157,29 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserDO> implements 
         String tokenKey = RedisCacheConstant.LOGIN_USER_KEY + token;
         // 60min ttl
         stringRedisTemplate.opsForValue().set(tokenKey, username, LOGIN_USER_TTL, TimeUnit.MINUTES);
+        UserInfoDTO userInfoDTO = new UserInfoDTO(userDO.getId(),
+                userDO.getUsername(),
+                userDO.getRealName(),
+                token);
+        UserHolder.saveUser(userInfoDTO);
 
         return new UserLoginRespDTO(token);
+    }
+
+    @Override
+    public Boolean check(HttpServletRequest request) {
+        String token = request.getHeader("authorization");
+        String tokenKey = RedisCacheConstant.LOGIN_USER_KEY + token;
+        System.out.println(tokenKey);
+        String username = stringRedisTemplate.opsForValue().get(tokenKey);
+        return !(username == null);
+    }
+
+    @Override
+    public Boolean logout(HttpServletRequest request) {
+        String token = request.getHeader("authorization");
+        String tokenKey = RedisCacheConstant.LOGIN_USER_KEY + token;
+        Boolean isDeleted = stringRedisTemplate.delete(tokenKey);
+        return isDeleted;
     }
 }

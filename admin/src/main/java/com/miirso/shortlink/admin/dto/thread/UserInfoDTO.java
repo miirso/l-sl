@@ -22,6 +22,6 @@ public class UserInfoDTO {
 
     private String realName;
 
-    // private String token;
+    private String token;
 
 }
