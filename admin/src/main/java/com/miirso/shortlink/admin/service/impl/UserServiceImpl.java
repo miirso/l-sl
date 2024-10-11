@@ -102,10 +102,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserDO> implements 
                 userRegisterCachePenetrationBloomFilter.add(username);
 
                 // 生成token
-                String tokenKey = RedisCacheConstant.LOGIN_USER_KEY + username;
                 String token = UUID.randomUUID().toString();
+                String tokenKey = RedisCacheConstant.LOGIN_USER_KEY + token;
                 // 60min ttl
-                stringRedisTemplate.opsForValue().set(tokenKey, token, LOGIN_USER_TTL, TimeUnit.MINUTES);
+                stringRedisTemplate.opsForValue().set(tokenKey, username, LOGIN_USER_TTL, TimeUnit.MINUTES);
 
                 // 当前线程存入User信息
                 UserInfoDTO userInfoDTO = BeanUtil.toBean(userRegisterReqDTO, UserInfoDTO.class);
@@ -148,11 +148,13 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserDO> implements 
         if (!BCrypt.checkpw(userLoginReqDTO.getPassword(), userDO.getPassword())) {
             throw new ClientException(USER_LOGIN_ERROR);
         }
-        
+
         // redis 存储token
-        String tokenKey = RedisCacheConstant.LOGIN_USER_KEY + username;
+        // 生成token
         String token = UUID.randomUUID().toString();
-        stringRedisTemplate.opsForValue().set(tokenKey, token, LOGIN_USER_TTL, TimeUnit.MINUTES);
+        String tokenKey = RedisCacheConstant.LOGIN_USER_KEY + token;
+        // 60min ttl
+        stringRedisTemplate.opsForValue().set(tokenKey, username, LOGIN_USER_TTL, TimeUnit.MINUTES);
 
         return new UserLoginRespDTO(token);
     }
