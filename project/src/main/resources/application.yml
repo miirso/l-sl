@@ -2,9 +2,20 @@ server:
   port: 8001
 
 spring:
+
+  application:
+    name: link-service # server name
+  cloud:
+    nacos:
+      discovery:
+        server-addr: 192.168.232.131:8848 # nacos docker addr
+      config:
+        server-addr: 192.168.232.131:8848 # nacos docker addr
+
   datasource:
     driver-class-name: org.apache.shardingsphere.driver.ShardingSphereDriver
     url: jdbc:shardingsphere:classpath:shardingsphere-config.yml
+
   data:
     redis:
       host: 192.168.232.131

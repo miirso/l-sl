@@ -1,9 +1,9 @@
 package com.miirso.shortlink.admin.controller;
 
 
-import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.miirso.shortlink.admin.client.LinkClient;
 import com.miirso.shortlink.admin.common.convention.result.Result;
-import com.miirso.shortlink.admin.remote.dto.ShortLinkRemoteService;
 import com.miirso.shortlink.admin.remote.dto.req.ShortLinkPageReqDTO;
 import com.miirso.shortlink.admin.remote.dto.resp.ShortLinkPageRespDTO;
 import lombok.RequiredArgsConstructor;
@@ -16,9 +16,20 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class ShortLinkController {
 
+    private final LinkClient linkClient;
+
     @GetMapping("/page")
-    public Result<IPage<ShortLinkPageRespDTO>> pageShortLink(ShortLinkPageReqDTO shortLinkPageReqDTO) {
-        ShortLinkRemoteService shortLinkRemoteService = new ShortLinkRemoteService() {};
-        return shortLinkRemoteService.pageShortLink(shortLinkPageReqDTO);
+    public Result<Page<ShortLinkPageRespDTO>> pageShortLink(ShortLinkPageReqDTO shortLinkPageReqDTO) {
+        System.out.println("hello");
+        // ShortLinkRemoteService shortLinkRemoteService = new ShortLinkRemoteService() {};
+        // return shortLinkRemoteService.pageShortLink(shortLinkPageReqDTO);
+        Result<Page<ShortLinkPageRespDTO>> pageResult = linkClient.pageShortLink(
+                shortLinkPageReqDTO.getGid(),
+                shortLinkPageReqDTO.getCurrent(),
+                shortLinkPageReqDTO.getSize(),
+                shortLinkPageReqDTO.getOrderTag()
+                );
+
+        return pageResult;
     }
 }
