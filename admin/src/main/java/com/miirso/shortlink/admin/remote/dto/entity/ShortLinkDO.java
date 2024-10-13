@@ -1,18 +1,24 @@
-package com.miirso.shortlink.project.dto.resp;
+package com.miirso.shortlink.admin.remote.dto.entity;
 
 import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableName;
+import com.miirso.shortlink.admin.dao.entity.BaseDO;
 import lombok.Data;
 
 import java.util.Date;
 
 /**
- * @Package com.miirso.shortlink.project.dto.resp
+ * @Package com.miirso.shortlink.project.dao.entity
  * @Author miirso
- * @Date 2024/10/13 19:24
+ * @Date 2024/10/13 15:09
+ *
+ * 短链接DO Entity
+ *
  */
 
+@TableName("t_link")
 @Data
-public class ShortLinkPageRespDTO {
+public class ShortLinkDO extends BaseDO {
 
     /**
      * id
@@ -40,9 +46,9 @@ public class ShortLinkPageRespDTO {
     private String originUrl;
 
     /**
-     * 创建时间
+     * 网站图标
      */
-    private Date createTime;
+    private String favicon;
 
     /**
      * 点击量
@@ -55,9 +61,14 @@ public class ShortLinkPageRespDTO {
     private String gid;
 
     /**
-     * 网站icon
+     * 启用标识 0：未启用 1：已启用
      */
-    private String favicon;
+    private int enableStatus;
+
+    /**
+     * 创建类型 0：控制台 1：接口
+     */
+    private int createdType;
 
     /**
      * 有效期类型 0：永久有效 1：用户自定义
@@ -77,3 +88,5 @@ public class ShortLinkPageRespDTO {
     private String describe;
 
 }
+
+

@@ -1,4 +1,4 @@
-package com.miirso.shortlink.project.dto.resp;
+package com.miirso.shortlink.admin.remote.dto.resp;
 
 import com.baomidou.mybatisplus.annotation.TableField;
 import lombok.Data;
