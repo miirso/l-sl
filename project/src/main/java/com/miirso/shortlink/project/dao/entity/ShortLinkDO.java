@@ -1,5 +1,6 @@
 package com.miirso.shortlink.project.dao.entity;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
@@ -75,7 +76,9 @@ public class ShortLinkDO extends BaseDO {
 
     /**
      * 描述
+     * 涉及到 MySQL 关键字应该使用 TableField 注解包一下
      */
+    @TableField("`describe`")
     private String describe;
 
 }
