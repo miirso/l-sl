@@ -7,7 +7,7 @@ package com.miirso.shortlink.project.test;
  */
 public class LinkTableShardingTest {
 
-    private static final String SQL = "create table `t_link_%d`\n" +
+    private static final String SQL = "create table `t_link_%d` \n" +
             "(\n" +
             "    id              bigint auto_increment comment 'ID'\n" +
             "        primary key,\n" +
@@ -16,6 +16,7 @@ public class LinkTableShardingTest {
             "    short_uri       varchar(16) collate utf8mb4_bin null comment '短链接',\n" +
             "    full_short_url  varchar(255)                    null comment '完整短链接',\n" +
             "    origin_url      varchar(1024)                   null comment '完整链接',\n" +
+            "    favicon         varchar(255)                    null comment '网站图标',\n" +
             "    click_num       int default 0                   null comment '点击量',\n" +
             "    enable_status   tinyint(1)                      null comment '启用标识 0 启用 1 未启用',\n" +
             "    created_type    tinyint                         null comment '创建方式 0 接口创建 1 控制台创建',\n" +

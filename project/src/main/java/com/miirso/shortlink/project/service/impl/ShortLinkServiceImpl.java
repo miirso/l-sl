@@ -2,13 +2,16 @@ package com.miirso.shortlink.project.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.miirso.shortlink.project.common.convention.exception.ServiceException;
 import com.miirso.shortlink.project.dao.entity.ShortLinkDO;
 import com.miirso.shortlink.project.dao.mapper.ShortLinkMapper;
 import com.miirso.shortlink.project.dto.req.ShortLinkCreateReqDTO;
+import com.miirso.shortlink.project.dto.req.ShortLinkPageReqDTO;
 import com.miirso.shortlink.project.dto.resp.ShortLinkCreateRespDTO;
+import com.miirso.shortlink.project.dto.resp.ShortLinkPageRespDTO;
 import com.miirso.shortlink.project.service.ShortLinkService;
 import com.miirso.shortlink.project.utils.HashUtil;
 import lombok.RequiredArgsConstructor;
@@ -40,6 +43,7 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
         ShortLinkDO shortLinkDO = BeanUtil.toBean(reqDTO, ShortLinkDO.class);
         shortLinkDO.setFullShortUrl(fullShortLinkUrl);
         shortLinkDO.setShortUri(shortLinkSuffix);
+        // shortLinkDO.setDelFlag(0);
         try {
             baseMapper.insert(shortLinkDO);
         } catch (DuplicateKeyException e) {
@@ -91,5 +95,15 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
         }
 
         return shortUri;
+    }
+
+    @Override
+    public IPage<ShortLinkPageRespDTO> pageShortLink(ShortLinkPageReqDTO shortLinkPageReqDTO) {
+        LambdaQueryWrapper<ShortLinkDO> queryWrapper = Wrappers.lambdaQuery(ShortLinkDO.class)
+                .eq(ShortLinkDO::getGid, shortLinkPageReqDTO.getGid())
+                .eq(ShortLinkDO::getDelFlag, 0)
+                .eq(ShortLinkDO::getEnableStatus, 0);
+        IPage<ShortLinkDO> resultPage = baseMapper.selectPage(shortLinkPageReqDTO, queryWrapper);
+        return resultPage.convert(each -> BeanUtil.toBean(each, ShortLinkPageRespDTO.class));
     }
 }
