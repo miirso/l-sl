@@ -15,7 +15,6 @@ public class ShortLinkCreateRespDTO {
     /**
      * 分组信息
      */
-    // private ShortLinkGroupRespDTO shortLinkGroupRespDTO;
     private String gid;
 
     /**
