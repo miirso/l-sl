@@ -2,7 +2,9 @@ package com.miirso.shortlink.admin.remote.dto.req;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.miirso.shortlink.admin.remote.dto.entity.ShortLinkDO;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * @Package com.miirso.shortlink.project.dto.req
@@ -12,6 +14,8 @@ import lombok.Data;
 
 
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class ShortLinkPageReqDTO extends Page<ShortLinkDO> {
 
     /**

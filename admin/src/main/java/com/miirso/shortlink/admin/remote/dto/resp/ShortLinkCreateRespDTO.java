@@ -1,7 +1,9 @@
 package com.miirso.shortlink.admin.remote.dto.resp;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * @Package com.miirso.shortlink.project.dto.resp
@@ -10,6 +12,8 @@ import lombok.Data;
  */
 @Data
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class ShortLinkCreateRespDTO {
 
     /**
