@@ -1,3 +1,14 @@
 server:
   port: 8000 # 网关在最上层
-  
+
+spring:
+  application:
+    name: gateway
+  cloud:
+    nacos:
+      discovery:
+        server-addr: 192.168.232.131:8848 # nacos docker addr
+      config:
+        server-addr: 192.168.232.131:8848 # nacos docker addr
+    gateway:
+      # useless now
