@@ -95,6 +95,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserDO> implements 
                 // 加密password
                 UserDO user = BeanUtil.toBean(userRegisterReqDTO, UserDO.class);
                 user.setPassword(PasswordEncoder.encode(user.getPassword()));
+                // TODO 新增用户重复会报错,需要修改
                 int inserted = baseMapper.insert(user);
                 if (inserted < 1) {
                     throw new ServiceException(UserErrorCode.USER_SAVE_ERROR);
