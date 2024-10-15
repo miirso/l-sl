@@ -31,4 +31,8 @@ public class GroupRespDTO {
      */
     private Integer sortOrder;
 
+    /**
+     * 当前分组下短链接的数量
+     */
+    private Long sortLinkCount;
 }

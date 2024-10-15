@@ -4,12 +4,15 @@ package com.miirso.shortlink.admin.controller;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.miirso.shortlink.admin.client.LinkClient;
 import com.miirso.shortlink.admin.common.convention.result.Result;
+import com.miirso.shortlink.admin.dto.resp.ShortLinkGroupCountRespDTO;
 import com.miirso.shortlink.admin.remote.dto.req.ShortLinkCreateReqDTO;
 import com.miirso.shortlink.admin.remote.dto.req.ShortLinkPageReqDTO;
 import com.miirso.shortlink.admin.remote.dto.resp.ShortLinkCreateRespDTO;
 import com.miirso.shortlink.admin.remote.dto.resp.ShortLinkPageRespDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/short-link/admin/v1") // v1作为最后后缀
@@ -38,4 +41,8 @@ public class ShortLinkController {
         return linkClient.createShortLink(reqDTO);
     }
 
+    @GetMapping("/count")
+    Result<List<ShortLinkGroupCountRespDTO>> listGroupShortLinkCount(@RequestParam("gids") List<String> gids) {
+        return linkClient.listGroupShortLinkCount(gids);
+    }
 }

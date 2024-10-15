@@ -6,10 +6,13 @@ import com.miirso.shortlink.project.common.convention.result.Results;
 import com.miirso.shortlink.project.dto.req.ShortLinkCreateReqDTO;
 import com.miirso.shortlink.project.dto.req.ShortLinkPageReqDTO;
 import com.miirso.shortlink.project.dto.resp.ShortLinkCreateRespDTO;
+import com.miirso.shortlink.project.dto.resp.ShortLinkGroupCountRespDTO;
 import com.miirso.shortlink.project.dto.resp.ShortLinkPageRespDTO;
 import com.miirso.shortlink.project.service.ShortLinkService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 /**
  * @Package com.miirso.shortlink.project.controller
@@ -35,7 +38,12 @@ public class ShortLinkController {
 
     @GetMapping("/page")
     public Result<IPage<ShortLinkPageRespDTO>> pageShortLink(ShortLinkPageReqDTO shortLinkPageReqDTO) {
-
         return Results.success(shortLinkService.pageShortLink(shortLinkPageReqDTO));
     }
+
+    @GetMapping("/count")
+    public Result<List<ShortLinkGroupCountRespDTO>> listGroupShortLinkCount(@RequestParam("gids") List<String> gids) {
+        return Results.success(shortLinkService.listGroupShortLinkCount(gids));
+    }
+
 }

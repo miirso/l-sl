@@ -46,7 +46,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, GroupDO> implemen
                 .username(username)
                 .sortOrder(0)
                 .build();
-        groupDO.setDelFlag(false);
+        groupDO.setDelFlag(0);
         baseMapper.insert(groupDO);
     }
 

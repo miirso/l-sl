@@ -2,6 +2,7 @@ package com.miirso.shortlink.admin.client;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.miirso.shortlink.admin.common.convention.result.Result;
+import com.miirso.shortlink.admin.dto.resp.ShortLinkGroupCountRespDTO;
 import com.miirso.shortlink.admin.remote.dto.req.ShortLinkCreateReqDTO;
 import com.miirso.shortlink.admin.remote.dto.resp.ShortLinkCreateRespDTO;
 import com.miirso.shortlink.admin.remote.dto.resp.ShortLinkPageRespDTO;
@@ -10,6 +11,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
+
+import java.util.List;
 
 /**
  * @Package com.miirso.shortlink.admin.client
@@ -46,6 +49,13 @@ public interface LinkClient {
      * @param reqDTO
      */
     @PostMapping("/api/short-link/project/v1/create")
-    public Result<ShortLinkCreateRespDTO> createShortLink(@RequestBody ShortLinkCreateReqDTO reqDTO);
+    Result<ShortLinkCreateRespDTO> createShortLink(@RequestBody ShortLinkCreateReqDTO reqDTO);
+
+    /**
+     * 远程调用 link-service 的分组查询接口
+     * @param gids
+     */
+    @GetMapping("/api/short-link/project/v1/count")
+    Result<List<ShortLinkGroupCountRespDTO>> listGroupShortLinkCount(@RequestParam("gids") List<String> gids);
 
 }
