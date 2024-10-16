@@ -12,6 +12,7 @@ import com.miirso.shortlink.admin.common.convention.exception.ServiceException;
 import com.miirso.shortlink.admin.common.enums.UserErrorCode;
 import com.miirso.shortlink.admin.dao.entity.UserDO;
 import com.miirso.shortlink.admin.dao.mapper.UserMapper;
+import com.miirso.shortlink.admin.dto.req.GroupSaveReqDTO;
 import com.miirso.shortlink.admin.dto.req.UserLoginReqDTO;
 import com.miirso.shortlink.admin.dto.req.UserRegisterReqDTO;
 import com.miirso.shortlink.admin.dto.req.UserUpdateReqDTO;
@@ -19,6 +20,7 @@ import com.miirso.shortlink.admin.dto.resp.UserLoginRespDTO;
 import com.miirso.shortlink.admin.dto.resp.UserRegisterRespDTO;
 import com.miirso.shortlink.admin.dto.resp.UserRespDTO;
 import com.miirso.shortlink.admin.dto.thread.UserInfoDTO;
+import com.miirso.shortlink.admin.service.GroupService;
 import com.miirso.shortlink.admin.service.UserService;
 import com.miirso.shortlink.admin.utils.PasswordEncoder;
 import com.miirso.shortlink.admin.utils.UserHolder;
@@ -57,6 +59,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserDO> implements 
 
     private final StringRedisTemplate stringRedisTemplate;
 
+    private final GroupService groupService;
+
     @Override
     public UserRespDTO getUserByUserName(String username) {
         LambdaQueryWrapper<UserDO> queryWrapper = Wrappers.lambdaQuery(UserDO.class)
@@ -83,6 +87,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserDO> implements 
     }
 
     @Override
+    // TODO 添加一个功能，用户注册后自动生成一个短链接分组，作为用户的默认分组
     public UserRegisterRespDTO register(UserRegisterReqDTO userRegisterReqDTO) {
         String username = userRegisterReqDTO.getUsername();
         if (!hasUserName(username)) {
@@ -117,12 +122,17 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserDO> implements 
                 userInfoDTO.setToken(token);
                 UserHolder.saveUser(userInfoDTO);
 
+                // 为当前用户生成默认分组
+                GroupSaveReqDTO groupSaveReqDTO = new GroupSaveReqDTO("default");
+                groupService.saveGroup(groupSaveReqDTO);
+
                 return new UserRegisterRespDTO(token);
             }
             throw new ClientException(USER_NAME_EXIST);
         } finally {
             lock.unlock();
         }
+
     }
 
     @Override
