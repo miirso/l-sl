@@ -4,13 +4,11 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.miirso.shortlink.admin.common.convention.result.Result;
 import com.miirso.shortlink.admin.dto.resp.ShortLinkGroupCountRespDTO;
 import com.miirso.shortlink.admin.remote.dto.req.ShortLinkCreateReqDTO;
+import com.miirso.shortlink.admin.remote.dto.req.ShortLinkUpdateReqDTO;
 import com.miirso.shortlink.admin.remote.dto.resp.ShortLinkCreateRespDTO;
 import com.miirso.shortlink.admin.remote.dto.resp.ShortLinkPageRespDTO;
 import org.springframework.cloud.openfeign.FeignClient;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -58,4 +56,12 @@ public interface LinkClient {
     @GetMapping("/api/short-link/project/v1/count")
     Result<List<ShortLinkGroupCountRespDTO>> listGroupShortLinkCount(@RequestParam("gids") List<String> gids);
 
+    /**
+     * 远程调用 link-service 的修改短链接信息功能
+     * @param requestParam
+     * @return
+     */
+    @RequestMapping(value = "/api/short-link/project/v1/update"
+    , method = RequestMethod.POST)
+    Result<Void> updateShortLink(@RequestBody ShortLinkUpdateReqDTO requestParam);
 }

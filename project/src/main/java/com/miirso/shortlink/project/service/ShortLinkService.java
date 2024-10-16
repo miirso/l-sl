@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.miirso.shortlink.project.dao.entity.ShortLinkDO;
 import com.miirso.shortlink.project.dto.req.ShortLinkCreateReqDTO;
 import com.miirso.shortlink.project.dto.req.ShortLinkPageReqDTO;
+import com.miirso.shortlink.project.dto.req.ShortLinkUpdateReqDTO;
 import com.miirso.shortlink.project.dto.resp.ShortLinkCreateRespDTO;
 import com.miirso.shortlink.project.dto.resp.ShortLinkGroupCountRespDTO;
 import com.miirso.shortlink.project.dto.resp.ShortLinkPageRespDTO;
@@ -35,4 +36,10 @@ public interface ShortLinkService extends IService<ShortLinkDO> {
      * @param gids
      */
     List<ShortLinkGroupCountRespDTO> listGroupShortLinkCount(List<String> gids);
+
+    /**
+     * 更新短链接信息
+     * @param requestParam
+     */
+    void updateShortLink(ShortLinkUpdateReqDTO requestParam);
 }

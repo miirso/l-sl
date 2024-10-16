@@ -5,6 +5,7 @@ import com.miirso.shortlink.project.common.convention.result.Result;
 import com.miirso.shortlink.project.common.convention.result.Results;
 import com.miirso.shortlink.project.dto.req.ShortLinkCreateReqDTO;
 import com.miirso.shortlink.project.dto.req.ShortLinkPageReqDTO;
+import com.miirso.shortlink.project.dto.req.ShortLinkUpdateReqDTO;
 import com.miirso.shortlink.project.dto.resp.ShortLinkCreateRespDTO;
 import com.miirso.shortlink.project.dto.resp.ShortLinkGroupCountRespDTO;
 import com.miirso.shortlink.project.dto.resp.ShortLinkPageRespDTO;
@@ -44,6 +45,13 @@ public class ShortLinkController {
     @GetMapping("/count")
     public Result<List<ShortLinkGroupCountRespDTO>> listGroupShortLinkCount(@RequestParam("gids") List<String> gids) {
         return Results.success(shortLinkService.listGroupShortLinkCount(gids));
+    }
+
+    @PostMapping("/update")
+    public Result<Void> updateShortLink(@RequestBody ShortLinkUpdateReqDTO requestParam) {
+        System.out.println(requestParam.getGid());
+        shortLinkService.updateShortLink(requestParam);
+        return Results.success();
     }
 
 }
