@@ -236,10 +236,12 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
 
         boolean contains = shortUriCreateCachePenetrationBloomFilter.contains(fullShortUrl);
         if (!contains) {
+            ((HttpServletResponse)servletResponse).sendRedirect("/page/notfound");
             return;
         }
         String gotoIsNullShortLink = stringRedisTemplate.opsForValue().get(String.format(GOTO_IS_NULL_SHORT_LINK_KEY, fullShortUrl));
         if (StrUtil.isNotBlank(gotoIsNullShortLink)) {
+            ((HttpServletResponse)servletResponse).sendRedirect("/page/notfound");
             return;
         }
 
@@ -258,6 +260,7 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
             String gid = shortLinkGotoDO.getGid();
             if (gid == null) {
                 stringRedisTemplate.opsForValue().set(String.format(GOTO_IS_NULL_SHORT_LINK_KEY, fullShortUrl), "-", 30, TimeUnit.MINUTES);
+                ((HttpServletResponse)servletResponse).sendRedirect("/page/notfound");
                 return;
             }
             LambdaQueryWrapper<ShortLinkDO> queryWrapper = Wrappers.lambdaQuery(ShortLinkDO.class)
@@ -267,9 +270,13 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
                     .eq(ShortLinkDO::getEnableStatus, 0);
             ShortLinkDO shortLinkDO = baseMapper.selectOne(queryWrapper);
             // 实现跳转
-            if (shortLinkDO == null) {throw new ClientException("无此短链接");}
+            if (shortLinkDO == null) {
+                // throw new ClientException("无此短链接");
+                ((HttpServletResponse)servletResponse).sendRedirect("/page/notfound");
+            }
             if (shortLinkDO.getValidDate() != null && shortLinkDO.getValidDate().before(new Date())) {
                 stringRedisTemplate.opsForValue().set(String.format(GOTO_IS_NULL_SHORT_LINK_KEY, fullShortUrl), "-", 30, TimeUnit.MINUTES);
+                ((HttpServletResponse)servletResponse).sendRedirect("/page/notfound");
                 return;
             }
             stringRedisTemplate.opsForValue().set(
