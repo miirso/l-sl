@@ -11,6 +11,8 @@ import com.miirso.shortlink.project.common.convention.exception.ClientException;
 import com.miirso.shortlink.project.common.convention.exception.ServiceException;
 import com.miirso.shortlink.project.common.enums.VailDateTypeEnum;
 import com.miirso.shortlink.project.dao.entity.ShortLinkDO;
+import com.miirso.shortlink.project.dao.entity.ShortLinkGotoDO;
+import com.miirso.shortlink.project.dao.mapper.ShortLinkGotoMapper;
 import com.miirso.shortlink.project.dao.mapper.ShortLinkMapper;
 import com.miirso.shortlink.project.dto.req.ShortLinkCreateReqDTO;
 import com.miirso.shortlink.project.dto.req.ShortLinkPageReqDTO;
@@ -20,7 +22,11 @@ import com.miirso.shortlink.project.dto.resp.ShortLinkGroupCountRespDTO;
 import com.miirso.shortlink.project.dto.resp.ShortLinkPageRespDTO;
 import com.miirso.shortlink.project.service.ShortLinkService;
 import com.miirso.shortlink.project.utils.HashUtil;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RBloomFilter;
 import org.springframework.dao.DuplicateKeyException;
@@ -44,9 +50,11 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
 
     // TODO
     // 针对过滤器容量打满的问题，可以设置一个定时任务尝试在满时更新过滤器容量
-    private final RBloomFilter<String> shortUriCreteCachePenetrationBloomFilter;
+    private final RBloomFilter<String> shortUriCreateCachePenetrationBloomFilter;
 
     private final ShortLinkMapper shortLinkMapper;
+
+    private final ShortLinkGotoMapper shortLinkGotoMapper;
 
     @Override
     public ShortLinkCreateRespDTO createShortLink(ShortLinkCreateReqDTO reqDTO) {
@@ -57,21 +65,38 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
         shortLinkDO.setFullShortUrl(fullShortLinkUrl);
         shortLinkDO.setShortUri(shortLinkSuffix);
         // shortLinkDO.setDelFlag(0);
+
+        ShortLinkGotoDO shortLinkGotoDO = ShortLinkGotoDO.builder()
+                .fullShortUrl(fullShortLinkUrl)
+                .gid(reqDTO.getGid())
+                .build();
+
         try {
             baseMapper.insert(shortLinkDO);
+            log.info("Successfully inserted ShortLinkDO: {}", shortLinkDO);
+
+            shortLinkGotoMapper.insert(shortLinkGotoDO);
+            log.info("Successfully inserted ShortLinkGotoDO: {}", shortLinkGotoDO);
         } catch (DuplicateKeyException e) {
             // 针对布隆过滤器误判的报错
             // KEYPOINT
             // 套一层数据库查询
-            LambdaQueryWrapper<ShortLinkDO> queryWrapper = Wrappers.lambdaQuery(ShortLinkDO.class)
-                    .eq(ShortLinkDO::getFullShortUrl, fullShortLinkUrl);
-            ShortLinkDO hasShortLinkDO = baseMapper.selectOne(queryWrapper);
-            if (hasShortLinkDO != null) {
-                log.warn("短链接: {} 重复入库.", shortLinkDO.getFullShortUrl());
-                throw new ServiceException("短链接生成重复");
+            // LambdaQueryWrapper<ShortLinkDO> queryWrapper = Wrappers.lambdaQuery(ShortLinkDO.class)
+            //         .eq(ShortLinkDO::getFullShortUrl, fullShortLinkUrl);
+            // ShortLinkDO hasShortLinkDO = baseMapper.selectOne(queryWrapper);
+            // if (hasShortLinkDO != null) {
+            //     log.warn("短链接: {} 重复入库.", shortLinkDO.getFullShortUrl());
+            //     throw new ServiceException("短链接生成重复");
+            // }
+
+            // 首先判断是否存在布隆过滤器，如果不存在直接新增
+            String fullShortUrl = shortLinkDO.getFullShortUrl();
+            if (!shortUriCreateCachePenetrationBloomFilter.contains(fullShortUrl)) {
+                shortUriCreateCachePenetrationBloomFilter.add(fullShortUrl);
             }
+            throw new ServiceException(String.format("短链接：%s 生成重复", fullShortUrl));
         }
-        shortUriCreteCachePenetrationBloomFilter.add(shortLinkSuffix);
+        shortUriCreateCachePenetrationBloomFilter.add(shortLinkSuffix);
         return ShortLinkCreateRespDTO.builder()
                 .gid(shortLinkDO.getGid())
                 .originUrl(shortLinkDO.getOriginUrl())
@@ -93,7 +118,7 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
 
             String fullShortLink = domain + '/' + shortUri;
 
-            if (!shortUriCreteCachePenetrationBloomFilter.contains(fullShortLink)) {
+            if (!shortUriCreateCachePenetrationBloomFilter.contains(fullShortLink)) {
                 // 如果布隆过滤器误判怎么办？
                 // baseMapper执行insert时，会对索引fullShortLink的重复报错
                 break;
@@ -175,6 +200,48 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
         }
     }
 
+
+    @SneakyThrows
+    @Override
+    public void restoreUrl(String shortUri, ServletRequest servletRequest, ServletResponse servletResponse) {
+        String serverName = servletRequest.getServerName(); // 处理当前请求的服务器主机名:接收主机名
+
+        // String fullShortUrl = serverName + '/' + shortUri;
+        String fullShortUrl = serverName + '/' + shortUri;
+        System.out.println(fullShortUrl);
+
+
+        // t_link 表中是按照gid作为分片键的，所以无法通过传递过来的shortUri查找长连接
+        // 故我们要有一个专门的表，联系shortUri和gid，以便查询原始链接
+
+        // 这里既然又新增了shortUri和gid的关联goto表，所以在新增短链接的时候，就要专门新增这个关系了
+
+        // 1. 找到gid
+        LambdaQueryWrapper<ShortLinkGotoDO> linkGotoQueryWrapper = Wrappers.lambdaQuery(ShortLinkGotoDO.class)
+                .eq(ShortLinkGotoDO::getFullShortUrl, fullShortUrl);
+        ShortLinkGotoDO shortLinkGotoDO = shortLinkGotoMapper.selectOne(linkGotoQueryWrapper);
+
+        String gid = shortLinkGotoDO.getGid();
+
+        if (gid == null) {return;}
+
+        LambdaQueryWrapper<ShortLinkDO> queryWrapper = Wrappers.lambdaQuery(ShortLinkDO.class)
+                .eq(ShortLinkDO::getGid, gid)
+                .eq(ShortLinkDO::getFullShortUrl, fullShortUrl)
+                .eq(ShortLinkDO::getDelFlag, 0)
+                .eq(ShortLinkDO::getEnableStatus, 0);
+        ShortLinkDO shortLinkDO = baseMapper.selectOne(queryWrapper);
+
+        System.out.println("!!!!!!!!!" + shortLinkDO.getFullShortUrl());
+        if (shortLinkDO == null) {throw new ClientException("无此短链接");}
+
+        // 实现跳转
+        ((HttpServletResponse)servletResponse).sendRedirect(shortLinkDO.getOriginUrl());
+
+        // if (!shortUriCreateCachePenetrationBloomFilter.contains(fullShortUrl)) {
+        //
+        // }
+    }
 }
 
 

@@ -74,7 +74,7 @@ public class ShortLinkDO extends BaseDO {
     /**
      * 启用标识 0：未启用 1：已启用
      */
-    private Integer enableStatus;
+    private Integer enableStatus = 0;
 
     /**
      * 创建类型 0：控制台 1：接口

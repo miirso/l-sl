@@ -36,7 +36,7 @@ public class ShortLinkController {
 
         return pageResult;
     }
-
+    // TODO 完成短链接修改接口的校验
     @PostMapping("/update")
     public Result<Void> updateShortLink(@RequestBody ShortLinkUpdateReqDTO requestParam) {
         System.out.println(requestParam.getGid());
