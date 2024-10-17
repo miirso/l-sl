@@ -31,5 +31,5 @@ public class UrlTitleController {
     public Result<String> getUrlTitle(@RequestParam("url") String url) throws IOException {
         return Results.success(urlTitleService.getUrlTitle(url));
     }
-    
+
 }

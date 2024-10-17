@@ -272,6 +272,7 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
             // 实现跳转
             if (shortLinkDO == null) {
                 // throw new ClientException("无此短链接");
+                stringRedisTemplate.opsForValue().set(String.format(GOTO_IS_NULL_SHORT_LINK_KEY, fullShortUrl), "-", 30, TimeUnit.MINUTES);
                 ((HttpServletResponse)servletResponse).sendRedirect("/page/notfound");
             }
             if (shortLinkDO.getValidDate() != null && shortLinkDO.getValidDate().before(new Date())) {
