@@ -38,6 +38,7 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -110,7 +111,7 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
         }
         // 缓存预热
         stringRedisTemplate.opsForValue().set(
-                fullShortLinkUrl,
+                GOTO_SHORT_LINK_KEY + fullShortLinkUrl,
                 reqDTO.getOriginUrl(),
                 LinkUtil.getLinkCacheValidTime(reqDTO.getValidDate()), TimeUnit.MILLISECONDS
         );
@@ -267,8 +268,16 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
             ShortLinkDO shortLinkDO = baseMapper.selectOne(queryWrapper);
             // 实现跳转
             if (shortLinkDO == null) {throw new ClientException("无此短链接");}
-                    stringRedisTemplate.opsForValue().set(GOTO_SHORT_LINK_KEY + fullShortUrl, shortLinkDO.getOriginUrl());
-                    ((HttpServletResponse)servletResponse).sendRedirect(shortLinkDO.getOriginUrl());
+            if (shortLinkDO.getValidDate() != null && shortLinkDO.getValidDate().before(new Date())) {
+                stringRedisTemplate.opsForValue().set(String.format(GOTO_IS_NULL_SHORT_LINK_KEY, fullShortUrl), "-", 30, TimeUnit.MINUTES);
+                return;
+            }
+            stringRedisTemplate.opsForValue().set(
+                    String.format(GOTO_SHORT_LINK_KEY, fullShortUrl),
+                    shortLinkDO.getOriginUrl(),
+                    LinkUtil.getLinkCacheValidTime(shortLinkDO.getValidDate()), TimeUnit.MILLISECONDS
+            );
+            ((HttpServletResponse)servletResponse).sendRedirect(shortLinkDO.getOriginUrl());
         } finally {
             lock.unlock();
         }
