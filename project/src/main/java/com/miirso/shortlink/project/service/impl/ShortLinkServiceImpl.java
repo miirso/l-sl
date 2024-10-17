@@ -40,9 +40,9 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 
-import static com.miirso.shortlink.project.common.constant.RedisKeyConstant.GOTO_SHORT_LINK_KEY;
-import static com.miirso.shortlink.project.common.constant.RedisKeyConstant.LOCK_GOTO_SHORT_LINK_KEY;
+import static com.miirso.shortlink.project.common.constant.RedisKeyConstant.*;
 
 /**
  * @Package com.miirso.shortlink.project.service.impl
@@ -226,6 +226,15 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
             return;
         }
 
+        boolean contains = shortUriCreateCachePenetrationBloomFilter.contains(fullShortUrl);
+        if (!contains) {
+            return;
+        }
+        String gotoIsNullShortLink = stringRedisTemplate.opsForValue().get(String.format(GOTO_IS_NULL_SHORT_LINK_KEY, fullShortUrl));
+        if (StrUtil.isNotBlank(gotoIsNullShortLink)) {
+            return;
+        }
+
         RLock lock = redissonClient.getLock(LOCK_GOTO_SHORT_LINK_KEY + fullShortUrl);
         lock.lock();
 
@@ -239,7 +248,10 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
                     .eq(ShortLinkGotoDO::getFullShortUrl, fullShortUrl);
             ShortLinkGotoDO shortLinkGotoDO = shortLinkGotoMapper.selectOne(linkGotoQueryWrapper);
             String gid = shortLinkGotoDO.getGid();
-            if (gid == null) {return;}
+            if (gid == null) {
+                stringRedisTemplate.opsForValue().set(String.format(GOTO_IS_NULL_SHORT_LINK_KEY, fullShortUrl), "-", 30, TimeUnit.MINUTES);
+                return;
+            }
             LambdaQueryWrapper<ShortLinkDO> queryWrapper = Wrappers.lambdaQuery(ShortLinkDO.class)
                     .eq(ShortLinkDO::getGid, gid)
                     .eq(ShortLinkDO::getFullShortUrl, fullShortUrl)
@@ -256,27 +268,6 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
 
     }
 }
-
-
-// originalUrl = stringRedisTemplate.opsForValue().get(GOTO_SHORT_LINK_KEY + fullShortUrl);
-//                 if (StrUtil.isNotBlank(originalUrl)) {
-//         ((HttpServletResponse)servletResponse).sendRedirect(originalUrl);
-//                 }
-// LambdaQueryWrapper<ShortLinkGotoDO> linkGotoQueryWrapper = Wrappers.lambdaQuery(ShortLinkGotoDO.class)
-//         .eq(ShortLinkGotoDO::getFullShortUrl, fullShortUrl);
-// ShortLinkGotoDO shortLinkGotoDO = shortLinkGotoMapper.selectOne(linkGotoQueryWrapper);
-// String gid = shortLinkGotoDO.getGid();
-//                 if (gid == null) {return;}
-// LambdaQueryWrapper<ShortLinkDO> queryWrapper = Wrappers.lambdaQuery(ShortLinkDO.class)
-//         .eq(ShortLinkDO::getGid, gid)
-//         .eq(ShortLinkDO::getFullShortUrl, fullShortUrl)
-//         .eq(ShortLinkDO::getDelFlag, 0)
-//         .eq(ShortLinkDO::getEnableStatus, 0);
-// ShortLinkDO shortLinkDO = baseMapper.selectOne(queryWrapper);
-// // 实现跳转
-//                 if (shortLinkDO == null) {throw new ClientException("无此短链接");}
-//         stringRedisTemplate.opsForValue().set(GOTO_SHORT_LINK_KEY + fullShortUrl, shortLinkDO.getOriginUrl());
-//         ((HttpServletResponse)servletResponse).sendRedirect(shortLinkDO.getOriginUrl());
 
 
 
