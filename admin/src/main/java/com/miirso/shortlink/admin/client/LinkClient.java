@@ -3,6 +3,7 @@ package com.miirso.shortlink.admin.client;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.miirso.shortlink.admin.common.convention.result.Result;
 import com.miirso.shortlink.admin.dto.resp.ShortLinkGroupCountRespDTO;
+import com.miirso.shortlink.admin.remote.dto.req.RecycleBinSaveReqDTO;
 import com.miirso.shortlink.admin.remote.dto.req.ShortLinkCreateReqDTO;
 import com.miirso.shortlink.admin.remote.dto.req.ShortLinkUpdateReqDTO;
 import com.miirso.shortlink.admin.remote.dto.resp.ShortLinkCreateRespDTO;
@@ -64,4 +65,12 @@ public interface LinkClient {
     @RequestMapping(value = "/api/short-link/project/v1/update"
     , method = RequestMethod.POST)
     Result<Void> updateShortLink(@RequestBody ShortLinkUpdateReqDTO requestParam);
+
+    /**
+     * 远程调用 link-service 的回收站新增功能
+     * @param recycleBinSaveReqDTO
+     * @return
+     */
+    @PostMapping("/api/short-link/project/v1/recycle-bin/save")
+    Result<Void> saveRecycleBin(@RequestBody RecycleBinSaveReqDTO recycleBinSaveReqDTO);
 }
