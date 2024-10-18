@@ -87,4 +87,11 @@ public interface LinkClient {
             @RequestParam(name = "size", required = true) Long size,
             @RequestParam(name = "orderTag", required = false) String orderTag
     );
+
+    /** 
+     * 远程调用 link-service 的回收站移除指定短链接功能
+     * @param recycleBinSaveReqDTO
+     */
+    @PostMapping("/api/short-link/project/v1/recycle-bin/recover")
+    Result<Void> recoverShortLink(@RequestBody RecycleBinSaveReqDTO recycleBinSaveReqDTO);
 }

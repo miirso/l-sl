@@ -62,4 +62,10 @@ public class RecycleBinController {
         );
         return pageResult;
     }
+
+    @PostMapping("/recover")
+    public Result<Void> recoverShortLink(@RequestBody RecycleBinSaveReqDTO recycleBinSaveReqDTO) {
+        linkClient.recoverShortLink(recycleBinSaveReqDTO);
+        return Results.success();
+    }
 }
