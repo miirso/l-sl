@@ -73,4 +73,18 @@ public interface LinkClient {
      */
     @PostMapping("/api/short-link/project/v1/recycle-bin/save")
     Result<Void> saveRecycleBin(@RequestBody RecycleBinSaveReqDTO recycleBinSaveReqDTO);
+
+    /**
+     * 远程调用 link-service 的分页查询回收站功能
+     * @param current
+     * @param size
+     * @param orderTag
+     */
+    @GetMapping("/api/short-link/project/v1/recycle-bin/page")
+    Result<Page<ShortLinkPageRespDTO>> pageRecycledShortLink(
+            @RequestParam(name = "gidList", required = true) List<String> gidList,
+            @RequestParam(name = "current", required = true) Long current,
+            @RequestParam(name = "size", required = true) Long size,
+            @RequestParam(name = "orderTag", required = false) String orderTag
+    );
 }
