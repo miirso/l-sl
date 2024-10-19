@@ -338,13 +338,20 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
                         .map(Cookie::getValue)
                         .ifPresentOrElse(
                                 each -> {
-                                    Long added = stringRedisTemplate.opsForSet().add(SHORT_LINK_STATS_UV_KEY + fullShortUrl, each);
-                                    uvFirstFlag.set(added != null && added > 0L);
+                                    Long  uvAdded = stringRedisTemplate.opsForSet().add(SHORT_LINK_STATS_UV_KEY + fullShortUrl, each);
+                                    uvFirstFlag.set( uvAdded != null &&  uvAdded > 0L);
                                 }, addResponseCookieTask
                         );
             } else {
                 addResponseCookieTask.run();
             }
+
+            // UIP
+            String remoteAddr = LinkUtil.getActualIp((HttpServletRequest)request);
+            log.info("访问IP:{}", remoteAddr);
+            // Redis缓存中添加UIP
+            Long uipAdded = stringRedisTemplate.opsForSet().add(SHORT_LINK_STATS_UIP_KEY + fullShortUrl, remoteAddr);
+            boolean uipFirstFlag = uipAdded != null && uipAdded > 0L;
 
             // gid 重查
             if (StrUtil.isBlank(gid)) {
@@ -359,7 +366,7 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
             LinkAccessStatsDO linkAccessStatsDO = LinkAccessStatsDO.builder()
                     .pv(1)
                     .uv(uvFirstFlag.get() ? 1 : 0)
-                    .uip(1)
+                    .uip(uipFirstFlag ? 1 : 0)
                     .hour(hour)
                     .weekday(weekValue)
                     .fullShortUrl(fullShortUrl)
