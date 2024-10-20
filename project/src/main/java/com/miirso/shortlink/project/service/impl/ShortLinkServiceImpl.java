@@ -49,6 +49,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static com.miirso.shortlink.project.common.constant.RedisKeyConstant.*;
 import static com.miirso.shortlink.project.common.constant.ShortLinkConstant.AMAP_REMOTE_URL;
@@ -83,6 +84,8 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
     private final LinkOsStatsMapper linkOsStatsMapper;
 
     private final LinkBrowserStatsMapper linkBrowserStatsMapper;
+
+    private final LinkAccessLogsMapper linkAccessLogsMapper;
 
     @Value("${short-link.stats.locale.amap-key}")
     private String statsLocaleAmapKey;
@@ -328,10 +331,12 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
         Cookie[] cookies = ((HttpServletRequest) request).getCookies();
         // uv是否加一的标识
         AtomicBoolean uvFirstFlag = new AtomicBoolean();
-
+        AtomicReference<String> uv = new AtomicReference<>();
         try {
             Runnable addResponseCookieTask = () -> {
                 String uvUUID = UUID.fastUUID().toString();
+                uv.set(uvUUID);
+                log.info("uv.get() is : {}", uv.get());
                 Cookie uvCookie = new Cookie("uvCookie", uvUUID);
                 uvCookie.setMaxAge(60 * 60 * 24 * 30);
                 uvCookie.setPath(StrUtil.sub(fullShortUrl, fullShortUrl.indexOf("/"), fullShortUrl.length()));
@@ -349,6 +354,7 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
                         .map(Cookie::getValue)
                         .ifPresentOrElse(
                                 each -> {
+                                    uv.set(each);
                                     Long  uvAdded = stringRedisTemplate.opsForSet().add(SHORT_LINK_STATS_UV_KEY + fullShortUrl, each);
                                     uvFirstFlag.set( uvAdded != null &&  uvAdded > 0L);
                                 }, addResponseCookieTask
@@ -424,8 +430,9 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
             // ===locate service end===
 
             // ===user os type begin===
+            String os = LinkUtil.getOs(((HttpServletRequest) request));
             LinkOsStatsDO linkOsStatsDO = LinkOsStatsDO.builder()
-                    .os(LinkUtil.getOs(((HttpServletRequest) request)))
+                    .os(os)
                     .cnt(1)
                     .gid(gid)
                     .fullShortUrl(fullShortUrl)
@@ -435,8 +442,9 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
             // ===user os type end===
 
             // ===user browser type begin===
+            String browser = LinkUtil.getBrowser(((HttpServletRequest) request));
             LinkBrowserStatsDO linkBrowserStatsDO = LinkBrowserStatsDO.builder()
-                    .browser(LinkUtil.getBrowser(((HttpServletRequest) request)))
+                    .browser(browser)
                     .cnt(1)
                     .gid(gid)
                     .fullShortUrl(fullShortUrl)
@@ -444,6 +452,17 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
                     .build();
             linkBrowserStatsMapper.shortLinkBrowserState(linkBrowserStatsDO);
             // ===user browser type end===
+
+            // ===link access logs info begin===
+            LinkAccessLogsDO linkAccessLogsDO = LinkAccessLogsDO.builder()
+                    .user(uv.get())
+                    .ip(remoteAddr)
+                    .browser(browser)
+                    .os(os)
+                    .gid(gid)
+                    .fullShortUrl(fullShortUrl)
+                    .build();
+            linkAccessLogsMapper.insert(linkAccessLogsDO);
 
         } catch (Throwable ex) {
             log.error("短链接访问量统计异常", ex);
