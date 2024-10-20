@@ -25,6 +25,7 @@ public class ShortLinkGotoController {
      */
     @GetMapping("/{short-uri}")
     public void restoreUrl(@PathVariable("short-uri") String shortUri, ServletRequest servletRequest, ServletResponse servletResponse) {
+        System.out.println("===========!===========");
         shortLinkService.restoreUrl(shortUri, servletRequest, servletResponse);
     }
 

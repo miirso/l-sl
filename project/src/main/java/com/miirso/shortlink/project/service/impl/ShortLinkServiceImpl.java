@@ -6,6 +6,9 @@ import cn.hutool.core.date.Week;
 import cn.hutool.core.lang.UUID;
 import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.StrUtil;
+import cn.hutool.http.HttpUtil;
+import com.alibaba.fastjson2.JSON;
+import com.alibaba.fastjson2.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
@@ -16,9 +19,11 @@ import com.miirso.shortlink.project.common.convention.exception.ClientException;
 import com.miirso.shortlink.project.common.convention.exception.ServiceException;
 import com.miirso.shortlink.project.common.enums.VailDateTypeEnum;
 import com.miirso.shortlink.project.dao.entity.LinkAccessStatsDO;
+import com.miirso.shortlink.project.dao.entity.LinkLocaleStatsDO;
 import com.miirso.shortlink.project.dao.entity.ShortLinkDO;
 import com.miirso.shortlink.project.dao.entity.ShortLinkGotoDO;
 import com.miirso.shortlink.project.dao.mapper.LinkAccessStatsMapper;
+import com.miirso.shortlink.project.dao.mapper.LinkLocaleStatsMapper;
 import com.miirso.shortlink.project.dao.mapper.ShortLinkGotoMapper;
 import com.miirso.shortlink.project.dao.mapper.ShortLinkMapper;
 import com.miirso.shortlink.project.dto.req.ShortLinkCreateReqDTO;
@@ -41,6 +46,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RBloomFilter;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
@@ -51,6 +57,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.miirso.shortlink.project.common.constant.RedisKeyConstant.*;
+import static com.miirso.shortlink.project.common.constant.ShortLinkConstant.AMAP_REMOTE_URL;
 
 /**
  * @Package com.miirso.shortlink.project.service.impl
@@ -76,6 +83,11 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
     private final RedissonClient redissonClient;
 
     private final LinkAccessStatsMapper linkAccessStatsMapper;
+
+    private final LinkLocaleStatsMapper linkLocaleStatsMapper;
+
+    @Value("${short-link.stats.locale.amap-key}")
+    private String statsLocaleAmapKey;
 
 
     @Override
@@ -237,6 +249,7 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
     @SneakyThrows
     @Override
     public void restoreUrl(String shortUri, ServletRequest servletRequest, ServletResponse servletResponse) {
+        System.out.println("======111========");
         String serverName = servletRequest.getServerName(); // 处理当前请求的服务器主机名:接收主机名
         String fullShortUrl = serverName + '/' + shortUri;
         // Redis 中获取原始链接
@@ -347,7 +360,15 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
             }
 
             // UIP
-            String remoteAddr = LinkUtil.getActualIp((HttpServletRequest)request);
+            HttpServletRequest httpRequest = (HttpServletRequest) request;
+            // 针对使用内网穿透的修改
+            String remoteAddr = httpRequest.getHeader("X-Real-Ip");
+            // 如果无法获取 X-Real-Ip，也可以尝试获取 X-Natapp-Ip
+            if (remoteAddr == null || remoteAddr.isEmpty()) {
+                remoteAddr = httpRequest.getHeader("X-Natapp-Ip");
+            }
+            // KEYPOINT
+            // String remoteAddr = LinkUtil.getActualIp((HttpServletRequest)request);
             log.info("访问IP:{}", remoteAddr);
             // Redis缓存中添加UIP
             Long uipAdded = stringRedisTemplate.opsForSet().add(SHORT_LINK_STATS_UIP_KEY + fullShortUrl, remoteAddr);
@@ -374,6 +395,36 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
                     .date(new Date())
                     .build();
             linkAccessStatsMapper.shortLinkStats(linkAccessStatsDO);
+
+            // ===locate service begin===
+            Map<String, Object> localeParamMap = new HashMap<>();
+            localeParamMap.put("key", statsLocaleAmapKey);
+            localeParamMap.put("ip", remoteAddr);
+            String localeResultStr = HttpUtil.get(AMAP_REMOTE_URL, localeParamMap);
+            JSONObject localeResultObj = JSON.parseObject(localeResultStr);
+
+            log.info("localeResultStr is : {}", localeResultObj);
+            log.info("remoteAddr is : {}", request.getRemoteAddr());
+
+            String infoCode = localeResultObj.getString("infocode");
+            if (StrUtil.isNotBlank(infoCode) && StrUtil.equals(infoCode, "10000")) {
+                String province = localeResultObj.getString("province");
+
+                boolean unknownFlag = StrUtil.equals(province, "[]");
+                LinkLocaleStatsDO linkLocaleStatsDO = LinkLocaleStatsDO.builder()
+                        .province(unknownFlag ? "未知" : province)
+                        .city(unknownFlag ? "未知" : localeResultObj.getString("city"))
+                        .adcode(unknownFlag ? "未知" : localeResultObj.getString("adcode"))
+                        .cnt(1)
+                        .fullShortUrl(fullShortUrl)
+                        .country("中国")
+                        .gid(gid)
+                        .date(new Date())
+                        .build();
+                linkLocaleStatsMapper.shortLinkLocaleState(linkLocaleStatsDO);
+            }
+            // ===locate service end===
+
         } catch (Throwable ex) {
             log.error("短链接访问量统计异常", ex);
         }
