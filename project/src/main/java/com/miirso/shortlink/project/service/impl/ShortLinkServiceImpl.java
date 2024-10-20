@@ -191,6 +191,11 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
         return resultPage.convert(each -> BeanUtil.toBean(each, ShortLinkPageRespDTO.class));
     }
 
+    /**
+     * 短链接分组中链接数量查询
+     * @param gids
+     * @return
+     */
     @Override
     public List<ShortLinkGroupCountRespDTO> listGroupShortLinkCount(List<String> gids) {
         QueryWrapper<ShortLinkDO> shortLinkDOQueryWrapper = Wrappers.query(new ShortLinkDO())
@@ -202,6 +207,10 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
         return BeanUtil.copyToList(shortLinkDOList, ShortLinkGroupCountRespDTO.class);
     }
 
+    /**
+     * 短链接信息更新
+     * @param requestParam
+     */
     @Transactional(rollbackFor = Exception.class)
     @Override
     public void updateShortLink(ShortLinkUpdateReqDTO requestParam) {

@@ -8,6 +8,7 @@ import com.miirso.shortlink.admin.remote.dto.req.ShortLinkCreateReqDTO;
 import com.miirso.shortlink.admin.remote.dto.req.ShortLinkUpdateReqDTO;
 import com.miirso.shortlink.admin.remote.dto.resp.ShortLinkCreateRespDTO;
 import com.miirso.shortlink.admin.remote.dto.resp.ShortLinkPageRespDTO;
+import com.miirso.shortlink.admin.remote.dto.resp.ShortLinkStatsRespDTO;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.*;
 
@@ -94,4 +95,21 @@ public interface LinkClient {
      */
     @PostMapping("/api/short-link/project/v1/recycle-bin/recover")
     Result<Void> recoverShortLink(@RequestBody RecycleBinSaveReqDTO recycleBinSaveReqDTO);
+
+    /**
+     * 远程调用 link-service 的短链接监控模块:查询单个短链接监控数据
+     * @param fullShortLink
+     * @param gid
+     * @param startDate
+     * @param endDate
+     * @return 短链接监控数据
+     */
+    @GetMapping("/api/short-link/project/v1/stats")
+    Result<ShortLinkStatsRespDTO> shortLinkStats(
+            @RequestParam(name = "fullShortUrl") String fullShortLink,
+            @RequestParam(name = "gid") String gid,
+            @RequestParam(name = "startDate", required = false) String startDate,
+            @RequestParam(name = "endDate", required = false) String endDate
+    );
+
 }
