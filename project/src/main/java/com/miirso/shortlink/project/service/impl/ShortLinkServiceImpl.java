@@ -18,14 +18,8 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.miirso.shortlink.project.common.convention.exception.ClientException;
 import com.miirso.shortlink.project.common.convention.exception.ServiceException;
 import com.miirso.shortlink.project.common.enums.VailDateTypeEnum;
-import com.miirso.shortlink.project.dao.entity.LinkAccessStatsDO;
-import com.miirso.shortlink.project.dao.entity.LinkLocaleStatsDO;
-import com.miirso.shortlink.project.dao.entity.ShortLinkDO;
-import com.miirso.shortlink.project.dao.entity.ShortLinkGotoDO;
-import com.miirso.shortlink.project.dao.mapper.LinkAccessStatsMapper;
-import com.miirso.shortlink.project.dao.mapper.LinkLocaleStatsMapper;
-import com.miirso.shortlink.project.dao.mapper.ShortLinkGotoMapper;
-import com.miirso.shortlink.project.dao.mapper.ShortLinkMapper;
+import com.miirso.shortlink.project.dao.entity.*;
+import com.miirso.shortlink.project.dao.mapper.*;
 import com.miirso.shortlink.project.dto.req.ShortLinkCreateReqDTO;
 import com.miirso.shortlink.project.dto.req.ShortLinkPageReqDTO;
 import com.miirso.shortlink.project.dto.req.ShortLinkUpdateReqDTO;
@@ -85,6 +79,8 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
     private final LinkAccessStatsMapper linkAccessStatsMapper;
 
     private final LinkLocaleStatsMapper linkLocaleStatsMapper;
+
+    private final LinkOsStatsMapper linkOsStatsMapper;
 
     @Value("${short-link.stats.locale.amap-key}")
     private String statsLocaleAmapKey;
@@ -424,6 +420,17 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
                 linkLocaleStatsMapper.shortLinkLocaleState(linkLocaleStatsDO);
             }
             // ===locate service end===
+
+            // ===user os type begin===
+            LinkOsStatsDO linkOsStatsDO = LinkOsStatsDO.builder()
+                    .os(LinkUtil.getOs(((HttpServletRequest) request)))
+                    .cnt(1)
+                    .gid(gid)
+                    .fullShortUrl(fullShortUrl)
+                    .date(new Date())
+                    .build();
+            linkOsStatsMapper.shortLinkOsState(linkOsStatsDO);
+            // ===user os type end===
 
         } catch (Throwable ex) {
             log.error("短链接访问量统计异常", ex);
