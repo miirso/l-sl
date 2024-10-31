@@ -1,0 +1,26 @@
+@startuml
+start
+:接收短链接请求;
+:获取Cookie;
+if (是否已有UV标识?) then (是)
+  :获取UV标识;
+else (否)
+  :生成UV标识;
+  :设置Cookie;
+endif
+:获取用户IP;
+:统计PV、UV、UIP;
+if (是否提供GID?) then (是)
+  :使用提供的GID;
+else (否)
+  :查找GID;
+endif
+:记录访问数据;
+:记录位置信息;
+:记录用户信息 (操作系统、浏览器等);
+:记录访问日志信息;
+if (发生异常?) then (是)
+  :记录错误信息;
+endif
+stop
+@enduml

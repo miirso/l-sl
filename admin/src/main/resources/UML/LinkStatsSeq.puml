@@ -1,0 +1,57 @@
+@startuml
+actor User
+participant "HttpServletRequest" as Request
+participant "HttpServletResponse" as Response
+participant "Redis" as Redis
+participant "MySQL" as MySQL
+participant "LinkUtil" as LinkUtil
+
+User -> Request: 发起短链接访问
+Request -> Request: 获取 Cookies
+Request -> Redis: 检查 "uvCookie"
+alt 如果 Cookie 存在
+    Redis -> Request: 返回 "uvCookie" 值
+else 如果 Cookie 不存在
+    Request -> Response: 创建新的 "uvCookie"
+    Response -> Redis: 存储新生成的 UUID
+end
+
+Request -> LinkUtil: 获取访问 IP
+LinkUtil -> Request: 返回访问 IP
+
+Request -> MySQL: 查询 gid (如果为空)
+MySQL -> Request: 返回 gid
+
+Request -> MySQL: 插入 LinkAccessStatsDO
+MySQL -> Request: 确认插入成功
+
+Request -> LinkUtil: 获取地理位置信息
+LinkUtil -> Request: 返回省市信息
+Request -> MySQL: 插入 LinkLocaleStatsDO
+MySQL -> Request: 确认插入成功
+
+Request -> LinkUtil: 获取操作系统信息
+LinkUtil -> Request: 返回操作系统
+Request -> MySQL: 插入 LinkOsStatsDO
+MySQL -> Request: 确认插入成功
+
+Request -> LinkUtil: 获取浏览器信息
+LinkUtil -> Request: 返回浏览器信息
+Request -> MySQL: 插入 LinkBrowserStatsDO
+MySQL -> Request: 确认插入成功
+
+Request -> LinkUtil: 获取设备信息
+LinkUtil -> Request: 返回设备信息
+Request -> MySQL: 插入 LinkDeviceStatsDO
+MySQL -> Request: 确认插入成功
+
+Request -> LinkUtil: 获取网络类型
+LinkUtil -> Request: 返回网络类型
+Request -> MySQL: 插入 LinkNetworkStatsDO
+MySQL -> Request: 确认插入成功
+
+Request -> MySQL: 插入 LinkAccessLogsDO
+MySQL -> Request: 确认插入成功
+
+Request -> User: 返回响应
+@enduml

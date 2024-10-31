@@ -1,0 +1,59 @@
+@startuml
+
+:项目短链负责人: as u1
+:用户: as u2
+
+package 用户管理 {
+    usecase getUserByUsername
+    usecase hasUsername
+    usecase register
+    usecase updateUser
+    usecase login
+    usecase checkLoginStatus
+    usecase logout
+}
+
+u2--->getUserByUsername
+u2--->hasUsername
+u2--->register
+u2--->updateUser
+u2--->login
+u2--->checkLoginStatus
+u2--->logout
+
+note right of getUserByUsername
+    参数: username
+    返回: UserRespDTO
+end note
+
+note right of hasUsername
+    参数: username
+    返回: Boolean
+end note
+
+note right of register
+    参数: UserRegisterReqDTO
+    返回: UserRegisterRespDTO
+end note
+
+note right of updateUser
+    参数: UserUpdateReqDTO
+    返回: Void
+end note
+
+note right of login
+    参数: UserLoginReqDTO
+    返回: UserLoginRespDTO
+end note
+
+note right of checkLoginStatus
+    参数: HttpServletRequest
+    返回: Boolean
+end note
+
+note right of logout
+    参数: HttpServletRequest
+    返回: Boolean
+end note
+
+@enduml

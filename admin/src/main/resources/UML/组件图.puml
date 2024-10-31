@@ -1,0 +1,43 @@
+@startuml
+package "短链接监控系统" {
+    [短链接监控服务] #FFAAAA
+
+    package "控制器层" {
+        [短链接跳转控制器] #FFFF99
+        [短链接统计控制器] #FFFF99
+        [回收站控制器] #FFFF99
+        [短链接未找到控制器] #FFFF99
+    }
+
+    package "服务层" {
+        [短链接服务] #FFCC99
+        [短链接统计服务] #FFCC99
+        [回收站服务] #FFCC99
+    }
+
+    package "数据库" {
+        [MySQL] #FFCC99
+        [ShortLinkGotoDO]
+        [ShortLinkDO]
+        [LinkAccessStatsDO]
+        [LinkLocaleStatsDO]
+        [LinkOsStatsDO]
+        [LinkNetworkStatsDO]
+        [LinkDeviceStatsDO]
+        [LinkBrowserStatsDO]
+    }
+
+    package "工具类" {
+        [LinkUtil]
+    }
+
+    [短链接跳转控制器] --> [短链接服务] : 调用短链接跳转
+    [短链接统计控制器] --> [短链接统计服务] : 调用统计数据
+    [回收站控制器] --> [回收站服务] : 管理回收站数据
+    [短链接监控服务] --> [Redis] : 访问 UV/IP 数据
+    [短链接监控服务] --> [MySQL] : 统计信息存储
+    [短链接监控服务] --> [LinkUtil] : 获取用户信息
+    [LinkUtil] --> [HttpServletRequest] : 提取请求信息
+}
+
+@enduml

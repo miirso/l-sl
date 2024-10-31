@@ -1,0 +1,32 @@
+@startuml
+
+:项目短链负责人: as u1
+
+package Link管理 {
+    usecase createLink
+    usecase updateLink
+    usecase dropLink
+    usecase viewLinkStats
+    usecase listGroupShortLinkCount
+}
+
+u1--->createLink
+u1--->updateLink
+u1--->dropLink
+u1--->viewLinkStats
+u1--->listGroupShortLinkCount
+
+:短链使用者: as u2
+package Link使用 {
+    usecase gotoLink
+}
+
+u2--->gotoLink
+
+package 监控 {
+    usecase viewShortLinkStats
+}
+
+u1--->viewShortLinkStats
+
+@enduml

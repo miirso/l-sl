@@ -1,0 +1,34 @@
+@startuml
+node "云负载均衡" as loadBalancer {
+    [API 网关] << (W,#FFCC00) >>
+}
+
+node "云服务" {
+    [用户服务] << (S,#FFAAAA) >>
+    [短链接服务] << (S,#FFAAAA) >>
+    [短链接统计服务] << (S,#FFAAAA) >>
+    [回收站服务] << (S,#FFAAAA) >>
+    [分组服务] << (S,#FFAAAA) >>
+}
+
+node "数据库" {
+    [MySQL] << (D,#FFCC99) >>
+}
+
+node "缓存" {
+    [Redis] << (R,#FFCC99) >>
+}
+
+loadBalancer --> [用户服务] : 请求转发
+loadBalancer --> [短链接服务] : 请求转发
+loadBalancer --> [短链接统计服务] : 请求转发
+loadBalancer --> [回收站服务] : 请求转发
+loadBalancer --> [分组服务] : 请求转发
+
+[短链接服务] --> [Redis] : 读取/写入数据
+[短链接服务] --> [MySQL] : 存储短链接信息
+[短链接统计服务] --> [MySQL] : 查询统计数据
+[回收站服务] --> [MySQL] : 管理回收站数据
+[分组服务] --> [MySQL] : 管理分组数据
+
+@enduml

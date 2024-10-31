@@ -1,0 +1,16 @@
+@startuml
+[*] -> 等待请求
+
+等待请求 -> 接收请求 : 请求到达
+接收请求 --> 生成短链接 : 调用 createShortLink
+生成短链接 --> 插入数据库 : 生成短链接后缀
+插入数据库 --> 成功状态 : 插入 ShortLinkDO 和 ShortLinkGotoDO
+插入数据库 --> 重复链接处理 : DuplicateKeyException
+
+重复链接处理 --> 检查布隆过滤器 : 检查短链接是否存在
+检查布隆过滤器 --> 插入数据库 : 不存在，继续插入
+检查布隆过滤器 --> 返回错误 : 存在，抛出异常
+
+成功状态 --> [*] : 返回 ShortLinkCreateRespDTO
+返回错误 --> [*] : 返回错误信息
+@enduml

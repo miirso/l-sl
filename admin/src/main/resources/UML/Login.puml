@@ -1,0 +1,37 @@
+@startuml
+
+actor 用户 as User
+participant "UserService" as UserService
+participant "Redis Cache" as Redis
+participant "MySQL Database" as MySQL
+
+== 用户注册 ==
+User -> UserService : register(UserRegisterReqDTO)
+UserService -> Redis : check username
+alt username exists
+    UserService -> User : throw UserNameExistsException
+else username does not exist
+    UserService -> MySQL : insert(UserDO)
+    MySQL -> UserService : user saved
+    UserService -> Redis : add username to bloom filter
+    UserService -> Redis : set(tokenKey, username, TTL)
+    UserService -> User : return UserRegisterRespDTO(token)
+end
+
+== 用户登录 ==
+User -> UserService : login(UserLoginReqDTO)
+UserService -> MySQL : find UserDO by username
+MySQL -> UserService : UserDO
+alt user not found
+    UserService -> User : throw UserNotFoundException
+else user found
+    UserService -> Redis : check password
+    alt password matches
+        UserService -> Redis : set(tokenKey, username, TTL)
+        UserService -> User : return UserLoginRespDTO(token)
+    else password does not match
+        UserService -> User : throw UserLoginErrorException
+    end
+end
+
+@enduml
