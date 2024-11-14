@@ -1,0 +1,13 @@
+@startuml
+
+!theme plain
+top to bottom direction
+skinparam linetype ortho
+
+class t_link_goto_15 {
+   gid  /* 分组标识 */: varchar(32)
+   full_short_url  /* 完整短链接 */: varchar(128)
+   id  /* ID */: bigint
+}
+
+@enduml

@@ -1,0 +1,26 @@
+@startuml
+
+!theme plain
+top to bottom direction
+skinparam linetype ortho
+
+class t_link_15 {
+   gid: varchar(32)
+   domain  /* 域名 */: varchar(128)
+   short_uri  /* 短链接 */: varchar(16)
+   full_short_url  /* 完整短链接 */: varchar(255)
+   origin_url  /* 完整链接 */: varchar(1024)
+   favicon  /* 网站图标 */: varchar(255)
+   click_num  /* 点击量 */: int
+   enable_status  /* 启用标识 0 启用 1 未启用 */: tinyint(1)
+   created_type  /* 创建方式 0 接口创建 1 控制台创建 */: tinyint
+   valid_date_type  /* 有效期类型 0 永久有效 1 自定义 */: tinyint(1)
+   valid_date  /* 有效期 */: datetime
+   describe  /* 描述 */: varchar(1024)
+   create_time: datetime
+   update_time: datetime
+   del_flag: tinyint(1)
+   id  /* ID */: bigint
+}
+
+@enduml

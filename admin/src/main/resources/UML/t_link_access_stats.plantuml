@@ -1,0 +1,22 @@
+@startuml
+
+!theme plain
+top to bottom direction
+skinparam linetype ortho
+
+class t_link_access_stats {
+   gid  /* 分组标识 */: varchar(32)
+   full_short_url  /* 完整短链接 */: varchar(128)
+   date  /* 日期 */: date
+   pv  /* 访问量 */: int
+   uv  /* 独立访问数 */: int
+   uip  /* 独立IP数 */: int
+   hour  /* 小时 */: int
+   weekday  /* 星期 */: int
+   create_time  /* 创建时间 */: datetime
+   update_time  /* 修改时间 */: datetime
+   del_flag  /* 删除标识：0 未删除 1 已删除 */: tinyint(1)
+   id  /* ID */: bigint
+}
+
+@enduml

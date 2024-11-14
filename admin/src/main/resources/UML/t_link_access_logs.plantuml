@@ -1,0 +1,23 @@
+@startuml
+
+!theme plain
+top to bottom direction
+skinparam linetype ortho
+
+class t_link_access_logs {
+   full_short_url  /* 完整短链接 */: varchar(128)
+   gid  /* 分组标识 */: varchar(32)
+   user  /* 用户信息 */: varchar(64)
+   ip  /* IP */: varchar(64)
+   browser  /* 浏览器 */: varchar(64)
+   os  /* 操作系统 */: varchar(64)
+   network  /* 访问网络 */: varchar(64)
+   device  /* 访问设备 */: varchar(64)
+   locale  /* 访问地区 */: varchar(256)
+   create_time  /* 创建时间 */: datetime
+   update_time  /* 修改时间 */: datetime
+   del_flag  /* 删除标识 0：未删除 1：已删除 */: tinyint(1)
+   id  /* ID */: bigint
+}
+
+@enduml

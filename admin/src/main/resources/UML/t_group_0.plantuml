@@ -1,0 +1,18 @@
+@startuml
+
+!theme plain
+top to bottom direction
+skinparam linetype ortho
+
+class t_group_0 {
+   gid  /* 分组标识 */: varchar(32)
+   name  /* 分组名称 */: varchar(64)
+   username  /* 创建分组用户名 */: varchar(256)
+   sort_order  /* 分组排序 */: int
+   create_time  /* 创建时间 */: datetime
+   update_time  /* 修改时间 */: datetime
+   del_flag  /* 删除标识 0：未删除 1：已删除 */: tinyint(1)
+   id  /* ID */: bigint
+}
+
+@enduml

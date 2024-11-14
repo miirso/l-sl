@@ -17,5 +17,4 @@ public class RedisCacheConstant {
 
     public static final Long LOGIN_USER_TTL = 60L;
 
-
 }

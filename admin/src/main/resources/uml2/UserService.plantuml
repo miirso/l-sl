@@ -1,0 +1,73 @@
+@startuml
+
+!theme plain
+top to bottom direction
+skinparam linetype ortho
+
+interface IService<T> << interface >> {
+  + count(): long
+  + remove(Wrapper<T>): boolean
+  + saveOrUpdate(T): boolean
+  + saveOrUpdateBatch(Collection<T>, int): boolean
+  + saveOrUpdateBatch(Collection<T>): boolean
+  + pageMaps(E): E
+  + listObjs(Function<Object, V>): List<V>
+  + removeById(Serializable, boolean): boolean
+  + updateBatchById(Collection<T>): boolean
+  + removeById(T): boolean
+  + listObjs(): List<Object>
+  + updateBatchById(Collection<T>, int): boolean
+  + pageMaps(E, Wrapper<T>): E
+  + saveOrUpdate(T, Wrapper<T>): boolean
+  + getObj(Wrapper<T>, Function<Object, V>): V
+  + lambdaUpdate(): LambdaUpdateChainWrapper<T>
+  + list(Wrapper<T>): List<T>
+  + getMap(Wrapper<T>): Map<String, Object>
+  + getById(Serializable): T
+  + saveBatch(Collection<T>, int): boolean
+  + updateById(T): boolean
+  + page(E, Wrapper<T>): E
+  + removeByIds(Collection<?>): boolean
+  + update(T, Wrapper<T>): boolean
+  + save(T): boolean
+  + update(Wrapper<T>): boolean
+  + removeBatchByIds(Collection<?>, boolean): boolean
+  + update(): UpdateChainWrapper<T>
+  + removeByIds(Collection<?>, boolean): boolean
+  + getOne(Wrapper<T>, boolean): T
+  + listObjs(Wrapper<T>): List<Object>
+  + listObjs(Wrapper<T>, Function<Object, V>): List<V>
+  + lambdaQuery(T): LambdaQueryChainWrapper<T>
+  + listByIds(Collection<Serializable>): List<T>
+  + removeById(Serializable): boolean
+  + removeBatchByIds(Collection<?>, int, boolean): boolean
+  + ktUpdate(): KtUpdateChainWrapper<T>
+  + list(): List<T>
+  + listMaps(Wrapper<T>): List<Map<String, Object>>
+  + ktQuery(): KtQueryChainWrapper<T>
+  + query(): QueryChainWrapper<T>
+  + listMaps(): List<Map<String, Object>>
+  + removeByMap(Map<String, Object>): boolean
+  + getOne(Wrapper<T>): T
+  + listByMap(Map<String, Object>): List<T>
+  + count(Wrapper<T>): long
+  + saveBatch(Collection<T>): boolean
+  + removeBatchByIds(Collection<?>, int): boolean
+  + page(E): E
+  + lambdaQuery(): LambdaQueryChainWrapper<T>
+  + removeBatchByIds(Collection<?>): boolean
+   entityClass: Class<T>
+   baseMapper: BaseMapper<T>
+}
+interface UserService << interface >> {
+  + logout(HttpServletRequest): Boolean
+  + login(UserLoginReqDTO): UserLoginRespDTO
+  + check(HttpServletRequest): Boolean
+  + hasUserName(String): Boolean
+  + getUserByUserName(String): UserRespDTO
+  + register(UserRegisterReqDTO): UserRegisterRespDTO
+  + update(UserUpdateReqDTO): void
+}
+
+UserService  -[#008200,plain]-^  IService    
+@enduml

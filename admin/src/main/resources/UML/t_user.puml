@@ -1,0 +1,21 @@
+@startuml
+
+!theme plain
+top to bottom direction
+skinparam linetype ortho
+
+class t_user_0 {
+   username  /* 用户名 */: varchar(256)
+   password  /* 密码 */: varchar(512)
+   real_name  /* 真实姓名 */: varchar(256)
+   phone  /* 手机号 */: varchar(128)
+   mail  /* 邮箱 */: varchar(512)
+   deletion_time  /* 注销时间戳 */: bigint
+   create_time  /* 创建时间 */: datetime
+   update_time  /* 修改时间 */: datetime
+   del_flag  /* 删除标识 0：未删除 1：已删除 */: tinyint(1)
+   group_id  /* 团队id */: bigint
+   id  /* ID */: bigint
+}
+
+@enduml

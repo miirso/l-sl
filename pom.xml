@@ -7,7 +7,6 @@
     <groupId>com.miirso.shotlink</groupId>
     <artifactId>shortlink-all</artifactId>
     <version>1.0-SNAPSHOT</version>
-    <!--声明当前项目为父项目，聚合项目，不包含实际的代码，而是通过module引入子模块，子模块才是可部署组件。-->
     <packaging>pom</packaging>
     <modules>
         <module>admin</module>

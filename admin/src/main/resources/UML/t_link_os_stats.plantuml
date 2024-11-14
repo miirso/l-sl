@@ -1,0 +1,19 @@
+@startuml
+
+!theme plain
+top to bottom direction
+skinparam linetype ortho
+
+class node0 as "t_link_os_stats  /* 短链接监控操作系统访问状态 */" {
+   full_short_url  /* 完整短链接 */: varchar(128)
+   gid  /* 分组标识 */: varchar(32)
+   date  /* 日期 */: date
+   cnt  /* 访问量 */: int
+   os  /* 操作系统 */: varchar(64)
+   create_time  /* 创建时间 */: datetime
+   update_time  /* 修改时间 */: datetime
+   del_flag  /* 删除标识 0表示删除 1表示未删除 */: tinyint(1)
+   id  /* ID */: bigint
+}
+
+@enduml
